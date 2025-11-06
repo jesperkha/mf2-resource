@@ -1,22 +1,10 @@
-import { parse } from "./parser.js";
-import { readFileSync } from "fs";
+import { Bundle, Mf2Resource } from "./api.js";
 
-const data: string = readFileSync("test2.src", "utf-8");
+const resource = Mf2Resource.fromFile("test.src", "en-us");
 
-// const ast = parseCST(data, (range, msg) => {
-//     console.log("error: " + msg);
-// });
+console.log(resource.parts());
 
-// for (const node of ast) {
-//     if (node.type == "entry") {
-//         const key = node.id.value;
-//         const value = node.value.value;
+// TODO:
 
-//         console.log(`key=${key}, value=${value}`);
-//     }
-// }
-
-// console.log(JSON.stringify(ast, null, 1));
-
-const ast = parse(data);
-console.log(JSON.stringify(ast, null, 2));
+const bundle = new Bundle("en-us", resource);
+const greeting = bundle.getEntry("greeting");
