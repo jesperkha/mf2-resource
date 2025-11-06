@@ -6,5 +6,12 @@ console.log(resource.parts());
 
 // TODO:
 
-const bundle = new Bundle("en-us", resource);
-const greeting = bundle.getEntry("greeting");
+const bundle = new Bundle("en-us", resource /* ...*/);
+
+let greeting = bundle.getEntry("greeting");
+console.log(greeting); // Hello {$name}, how are you?
+
+bundle.setLocale("no");
+
+greeting = bundle.getEntry("greeting");
+console.log(greeting); // Hei {$name}, hvordan går det?

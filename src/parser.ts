@@ -33,36 +33,32 @@ function parseSections(tokens: TokenSet): Section[] {
     while (!tokens.eof()) {
         const cm = parseCommentAndMetadata(tokens);
 
-        switch (tokens.cur()) {
-            case "[":
-                section.entries = entries;
-                entries = [];
-                sections.push(section);
+        if (tokens.cur() === "[") {
+            section.entries = entries;
+            entries = [];
+            sections.push(section);
 
-                tokens.consume(); // [
-                id = tokens.consume().split(".");
-                tokens.consume(); // ]
+            tokens.consume(); // [
+            id = tokens.consume().split(".");
+            tokens.consume(); // ]
 
-                section = {
-                    id,
-                    comment: cm.comment,
-                    meta: cm.meta,
-                    entries: [],
-                };
-                break;
-
-            default:
-                const key = tokens.consume();
-                tokens.consume(); // =
-                const value = tokens.consumeUntilNewline();
-                entries.push({
-                    type: "entry",
-                    comment: cm.comment,
-                    meta: cm.meta,
-                    id: key.split("."),
-                    value,
-                });
-                break;
+            section = {
+                id,
+                comment: cm.comment,
+                meta: cm.meta,
+                entries: [],
+            };
+        } else {
+            const key = tokens.consume();
+            tokens.consume(); // =
+            const value = tokens.consumeUntilNewline();
+            entries.push({
+                type: "entry",
+                comment: cm.comment,
+                meta: cm.meta,
+                id: key.split("."),
+                value,
+            });
         }
     }
 
