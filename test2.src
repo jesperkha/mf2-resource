@@ -1,0 +1,4 @@
+@locale en-US
+---
+
+greeting = Hello {$name}! How are you?

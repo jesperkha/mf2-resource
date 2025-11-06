@@ -1,17 +1,22 @@
-import { parseCST } from "./resource/parser.js";
-
-// load from file
-
-// bundle
-
-// parse to string
+import { parse } from "./parser.js";
 import { readFileSync } from "fs";
 
-// Synchronous read
 const data: string = readFileSync("test.src", "utf-8");
 
-console.log(
-    parseCST(data, (range, msg) => {
-        console.log("error: " + msg);
-    })
-);
+// const ast = parseCST(data, (range, msg) => {
+//     console.log("error: " + msg);
+// });
+
+// for (const node of ast) {
+//     if (node.type == "entry") {
+//         const key = node.id.value;
+//         const value = node.value.value;
+
+//         console.log(`key=${key}, value=${value}`);
+//     }
+// }
+
+// console.log(JSON.stringify(ast, null, 1));
+
+const ast = parse(data);
+console.log(JSON.stringify(ast, null, 2));
