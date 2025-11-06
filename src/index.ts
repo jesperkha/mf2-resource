@@ -1,7 +1,7 @@
 import { parse } from "./parser.js";
 import { readFileSync } from "fs";
 
-const data: string = readFileSync("test.src", "utf-8");
+const data: string = readFileSync("test2.src", "utf-8");
 
 // const ast = parseCST(data, (range, msg) => {
 //     console.log("error: " + msg);

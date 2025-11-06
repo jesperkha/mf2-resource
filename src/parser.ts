@@ -1,51 +1,120 @@
-import type { Metadata, Resource, Section } from "./resource.js";
+import type { Entry, Metadata, Resource, Section } from "./resource.js";
 
 export function parse(input: string): Resource {
-    const tokens = new TokenSet(tokenizeResource(input));
+    const tokens = new TokenSet(tokenizeInput(input));
+    const cm = parseCommentAndMetadata(tokens);
+    let sections: Section[] = [];
 
+    if (tokens.cur() === "---") {
+        tokens.consume();
+        sections = parseSections(tokens);
+    }
+
+    return {
+        comment: cm.comment,
+        meta: cm.meta,
+        sections,
+    };
+}
+
+function parseSections(tokens: TokenSet): Section[] {
+    let id: string[] = []; // Default to empty list for top level section
+
+    const sections = [];
+    let entries: Entry[] = [];
+
+    let section: Section = {
+        id: [],
+        comment: "",
+        meta: [],
+        entries: [],
+    };
+
+    while (!tokens.eof()) {
+        const cm = parseCommentAndMetadata(tokens);
+
+        switch (tokens.cur()) {
+            case "[":
+                section.entries = entries;
+                entries = [];
+                sections.push(section);
+
+                tokens.consume(); // [
+                id = tokens.consume().split(".");
+                tokens.consume(); // ]
+
+                section = {
+                    id,
+                    comment: cm.comment,
+                    meta: cm.meta,
+                    entries: [],
+                };
+                break;
+
+            default:
+                const key = tokens.consume();
+                tokens.consume(); // =
+                const value = tokens.consumeUntilNewline();
+                entries.push({
+                    type: "entry",
+                    comment: cm.comment,
+                    meta: cm.meta,
+                    id: key.split("."),
+                    value,
+                });
+                break;
+        }
+    }
+
+    section.entries = entries;
+    entries = [];
+    sections.push(section);
+    return sections;
+}
+
+type CommentAndMeta = {
+    comment: string;
+    meta: Metadata[];
+};
+
+function parseCommentAndMetadata(tokens: TokenSet): CommentAndMeta {
     const meta = [];
     let comment = "";
 
-    while (!tokens.eof() && tokens.cur() !== "---") {
+    tokens.skipWhitespace();
+
+    while (!tokens.eof()) {
         switch (tokens.cur()) {
-            // Resource level comment
             case "#":
                 const str = parseComment(tokens);
                 comment += str + (comment.length === 0 ? "" : " \n");
                 break;
 
-            // Resource level metadata
             case "@":
                 meta.push(parseMetadata(tokens));
                 break;
 
+            case "?NEWLINE?":
+                tokens.consume();
+                break;
+
             default:
-                tokens.skip();
+                return { comment, meta };
         }
     }
 
-    return {
-        comment,
-        meta,
-        sections,
-    };
+    return { comment, meta };
 }
 
 function parseComment(tokens: TokenSet): string {
-    tokens.skip(); // #
-
-    while (!tokens.eof() && tokens.cur() !== "?NEWLINE?") {
-        tokens.next();
-    }
-
-    const str = tokens.pop().join(" ");
-    return str;
+    tokens.consume(); // #
+    return tokens.consumeUntilNewline();
 }
 
 function parseMetadata(tokens: TokenSet): Metadata {
-    tokens.skip(); // @
-    const key = tokens.skip().join("");
-    const value = tokens.skip().join("");
+    tokens.consume(); // @
+    const key = tokens.consume();
+    const value = tokens.consumeUntilNewline();
     return { key, value };
 }
 
@@ -60,13 +129,32 @@ class TokenSet {
         this.consumed = [];
     }
 
-    skip(): string[] {
+    skipWhitespace() {
+        while (!this.eof() && this.isNewline()) this.consume();
+    }
+
+    isNewline(): boolean {
+        return this.cur() === "?NEWLINE?";
+    }
+
+    consume(): string {
+        const cur = this.cur();
         this.next();
-        return this.pop();
+        this.pop();
+        return cur;
+    }
+
+    consumeUntilNewline(): string {
+        while (!this.eof() && !this.isNewline()) {
+            this.next();
+        }
+
+        return this.pop().join(" ");
     }
 
     cur(): string {
-        return this.tokens[this.i]!;
+        if (!this.eof()) return this.tokens[this.i]!;
+        return "";
     }
 
     eof(): boolean {
@@ -87,49 +175,24 @@ class TokenSet {
     }
 }
 
-function tokenizeResource(input: string): string[] {
-    // Normalize CRLF
+function tokenizeInput(input: string): string[] {
     const text = input.replace(/\r\n/g, "\n");
-
-    // Regex alternation captures all token types
     const tokenRegex = /---|[@#\[\]=\\]|[A-Za-z0-9_\-\.]+|[^\s@#\[\]=\\]+|\n/g;
-
     const rawTokens = [...text.matchAll(tokenRegex)].map((m) => m[0]);
-
     const tokens: string[] = [];
 
     let i = 0;
     while (i < rawTokens.length) {
         const t = rawTokens[i]!;
 
-        // Always include newlines
         if (t === "\n") {
             tokens.push("?NEWLINE?");
             i++;
             continue;
         }
 
-        // Skip standalone whitespace
         if (/^\s+$/.test(t)) {
             i++;
-            continue;
-        }
-
-        // Accumulate multiline value continuations
-        if (t === "=") {
-            tokens.push("=");
-            i++;
-            // collect value and indented continuations
-            let valueParts: string[] = [];
-            while (i < rawTokens.length) {
-                const next = rawTokens[i]!;
-                if (next === "\n") break;
-                valueParts.push(next);
-                i++;
-            }
-            if (valueParts.length) {
-                tokens.push(...valueParts);
-            }
             continue;
         }
 
