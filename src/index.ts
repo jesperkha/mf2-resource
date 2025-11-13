@@ -1,19 +1,17 @@
-import { Bundle, Mf2Resource } from "./api.js";
+import { Bundle, Mf2Resource } from "./bundle.js";
 
-const resource = Mf2Resource.fromFile("test.src", "en-us");
+const bundle = new Bundle(
+    "en",
+    Mf2Resource.fromFile("locales/us.src", "en"),
+    Mf2Resource.fromFile("locales/no.src", "no")
+);
 
-console.log(JSON.stringify(resource.parts(), null, 2));
+console.log("Supported locales: " + bundle.getLocales());
 
-// TODO:
+let greeting = bundle.getEntry("greeting");
+console.log(greeting);
 
-// const bundle = new Bundle("en-us", resource /* ...*/);
+bundle.setLocale("no");
 
-// let greeting = bundle.getEntry("greeting");
-// console.log(greeting); // Hello {$name}, how are you?
-
-// bundle.setLocale("no");
-
-// greeting = bundle.getEntry("greeting");
-// console.log(greeting); // Hei {$name}, hvordan går det?
-
-// https://github.com/eemeli/message-resource-wg
+greeting = bundle.getEntry("greeting");
+console.log(greeting);

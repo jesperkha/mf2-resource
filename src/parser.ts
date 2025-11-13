@@ -170,7 +170,7 @@ class TokenSet {
             this.next();
         }
 
-        return this.pop().join(" ");
+        return this.pop().join("").replaceAll("?SPACE?", " ").replaceAll("?NEWLINE?", "\n");
     }
 
     cur(): string {
@@ -184,13 +184,13 @@ class TokenSet {
 
     next() {
         if (!this.eof()) {
-            if (!this.isWhitespace()) this.consumed.push(this.tokens[this.i]!);
+            this.consumed.push(this.tokens[this.i]!);
             this.i++;
         }
     }
 
     pop(): string[] {
-        const toks = this.consumed.filter((t) => t !== "?SPACE?" && t !== "?TAB?");
+        const toks = this.consumed;
         this.consumed = [];
         return toks;
     }
@@ -198,7 +198,7 @@ class TokenSet {
 
 function tokenizeInput(input: string): string[] {
     const text = input.replace(/\r\n/g, "\n");
-    const tokenRegex = /---|[@#\[\]=\\]|[A-Za-z0-9_\-\.]+|[ \t]+|[^\s@#\[\]=\\]+|\n/g;
+    const tokenRegex = /---|[@#\[\]=\\]|[\p{L}\p{N}_\-.]+|[ \t]+|[^\s@#\[\]=\\]+|\n/gu;
     const rawTokens = [...text.matchAll(tokenRegex)].map((m) => m[0]);
     const tokens: string[] = [];
 

@@ -1,0 +1,9 @@
+@locale no
+---
+
+greeting = Hei {$name}! Hvordan går det?
+
+multiline = Dette er første linje
+    andre linje
+    \    tredje linje med mellomrom
+

@@ -26,6 +26,17 @@ export class Mf2Resource {
     locale(): string {
         return this._locale;
     }
+
+    entry(name: string): string {
+        for (const section of this.parts().sections) {
+            for (const entry of section.entries) {
+                if (entry.type == "entry" && entry.id.join(".") === name) {
+                    return entry.value;
+                }
+            }
+        }
+        return "";
+    }
 }
 
 /**
@@ -53,8 +64,14 @@ export class Bundle {
      * @param name Name of entry in resource file
      * @returns Entry if found, else null
      */
-    getEntry(name: string): null {
-        return null;
+    getEntry(name: string): string {
+        let resource = this.sources[this.locale];
+        if (!resource) {
+            resource = this.sources[this.defaultLocale];
+            if (!resource) return "";
+        }
+
+        return resource.entry(name);
     }
 
     /**
@@ -62,13 +79,15 @@ export class Bundle {
      * @param locale Locale to set to. Does not validate if locale actually
      *               exists in bundle.
      */
-    setLocale(locale: string) {}
+    setLocale(locale: string) {
+        this.locale = locale;
+    }
 
     /**
      * Reports supported locales by this Bundle.
      * @returns List of supported locales.
      */
     getLocales(): string[] {
-        return [];
+        return Object.keys(this.sources);
     }
 }
