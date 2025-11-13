@@ -50,8 +50,29 @@ function parseSections(tokens: TokenSet): Section[] {
             };
         } else {
             const key = tokens.consume();
+            tokens.skipWhitespace();
             tokens.consume(); // =
-            const value = tokens.consumeUntilNewline();
+            tokens.skipWhitespace();
+            let value = tokens.consumeUntilNewline();
+            tokens.next();
+
+            while (tokens.cur() === "?SPACE?" || tokens.cur() === "?TAB?") {
+                tokens.skipWhitespace();
+                value += "\n";
+                if (tokens.cur() === "\\") {
+                    tokens.next();
+                    tokens.pop();
+                    while (!tokens.eof()) {
+                        if (tokens.cur() === "?TAB?") value += "\t";
+                        else if (tokens.cur() === "?SPACE?") value += " ";
+                        else break;
+                        tokens.next();
+                    }
+                }
+                value += tokens.consumeUntilNewline();
+                tokens.next();
+            }
+
             entries.push({
                 type: "entry",
                 comment: cm.comment,
@@ -126,7 +147,11 @@ class TokenSet {
     }
 
     skipWhitespace() {
-        while (!this.eof() && this.isNewline()) this.consume();
+        while (!this.eof() && this.isWhitespace()) this.consume();
+    }
+
+    isWhitespace(): boolean {
+        return this.isNewline() || this.cur() === "?SPACE?";
     }
 
     isNewline(): boolean {
@@ -159,13 +184,13 @@ class TokenSet {
 
     next() {
         if (!this.eof()) {
-            this.consumed.push(this.tokens[this.i]!);
+            if (!this.isWhitespace()) this.consumed.push(this.tokens[this.i]!);
             this.i++;
         }
     }
 
     pop(): string[] {
-        const toks = this.consumed;
+        const toks = this.consumed.filter((t) => t !== "?SPACE?" && t !== "?TAB?");
         this.consumed = [];
         return toks;
     }
@@ -173,27 +198,27 @@ class TokenSet {
 
 function tokenizeInput(input: string): string[] {
     const text = input.replace(/\r\n/g, "\n");
-    const tokenRegex = /---|[@#\[\]=\\]|[A-Za-z0-9_\-\.]+|[^\s@#\[\]=\\]+|\n/g;
+    const tokenRegex = /---|[@#\[\]=\\]|[A-Za-z0-9_\-\.]+|[ \t]+|[^\s@#\[\]=\\]+|\n/g;
     const rawTokens = [...text.matchAll(tokenRegex)].map((m) => m[0]);
     const tokens: string[] = [];
 
-    let i = 0;
-    while (i < rawTokens.length) {
+    for (let i = 0; i < rawTokens.length; i++) {
         const t = rawTokens[i]!;
-
         if (t === "\n") {
             tokens.push("?NEWLINE?");
-            i++;
-            continue;
+        } else if (t === " ") {
+            tokens.push("?SPACE?");
+        } else if (t === "\t") {
+            tokens.push("?TAB?");
+        } else if (/^[ \t]+$/.test(t)) {
+            // Handle sequences of spaces/tabs
+            for (const ch of t) {
+                if (ch === " ") tokens.push("?SPACE?");
+                else if (ch === "\t") tokens.push("?TAB?");
+            }
+        } else {
+            tokens.push(t);
         }
-
-        if (/^\s+$/.test(t)) {
-            i++;
-            continue;
-        }
-
-        tokens.push(t);
-        i++;
     }
 
     return tokens;
