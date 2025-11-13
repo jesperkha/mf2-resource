@@ -1,5 +1,5 @@
 import { readFileSync } from "fs";
-import type { Resource } from "./resource.js";
+import type { Metadata, Resource } from "./resource.js";
 import { parse } from "./parser.js";
 
 /**
@@ -14,28 +14,54 @@ export class Mf2Resource {
         this._locale = locale;
     }
 
+    /**
+     * Load resource from file.
+     * @param filepath Path to resource file
+     * @param locale The files locale. Mf2Resource does not automatically set the
+     *               resource locale based on the resource header metadata.
+     * @param encoding The file encoding, defaults to utf-8
+     * @returns New Mf2Resource
+     */
     static fromFile(filepath: string, locale: string = "", encoding: BufferEncoding = "utf-8"): Mf2Resource {
         const data: string = readFileSync(filepath, encoding);
         return new Mf2Resource(data, locale);
     }
 
+    /**
+     * Get the underlying resource tree.
+     * @returns Resource
+     */
     parts(): Resource {
         return this.rsrc;
     }
 
+    /**
+     * Get this resources locale.
+     * @returns locale
+     */
     locale(): string {
         return this._locale;
     }
 
-    entry(name: string): string {
+    /**
+     * Get an entry from this resource.
+     * @param name Name of entry.
+     * @returns Entry type with value to the entrys value. The Entry meta
+     *          array is all metadata tags applied to the resource, the section,
+     *          and the entry itself.
+     */
+    getEntry(name: string): Entry | null {
         for (const section of this.parts().sections) {
             for (const entry of section.entries) {
                 if (entry.type == "entry" && entry.id.join(".") === name) {
-                    return entry.value;
+                    return {
+                        value: entry.value,
+                        meta: this.parts().meta.concat(section.meta).concat(entry.meta),
+                    };
                 }
             }
         }
-        return "";
+        return null;
     }
 }
 
@@ -61,17 +87,18 @@ export class Bundle {
 
     /**
      * Retrieves an entry from the bundle, adhering to the current locale setting.
+     * If the entry is not found in the current locales resource the default locale is used.
      * @param name Name of entry in resource file
      * @returns Entry if found, else null
      */
-    getEntry(name: string): string {
+    getEntry(name: string): Entry | null {
         let resource = this.sources[this.locale];
         if (!resource) {
             resource = this.sources[this.defaultLocale];
-            if (!resource) return "";
+            if (!resource) return null;
         }
 
-        return resource.entry(name);
+        return resource.getEntry(name);
     }
 
     /**
@@ -91,3 +118,16 @@ export class Bundle {
         return Object.keys(this.sources);
     }
 }
+
+/**
+ * Entry describes a resource entry.
+ */
+type Entry = {
+    /**
+     * All metadata tags applied to the resource, the
+     * section this entry is in, and the entry itself.
+     */
+    meta: Metadata[];
+    /** The string value of the entry. */
+    value: string;
+};
