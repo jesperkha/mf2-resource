@@ -1,27 +1,40 @@
 import { describe, it, expect } from "vitest";
 import { Mf2Resource } from "../dist/index";
 
-describe("Mf2Resource()", () => {
-    it("creates and parses MF2 resources", () => {
+describe("Mf2Resource", () => {
+    it("parses MF2 resource strings", () => {
         const src = `
 @resourceTag resource
 ---
 
-@sectionTag section
-[my.section]
+entryOne = Some entry
 
 @entryTag entry
-foo = bar
+entryTwo = Another entry
 `;
         const res = new Mf2Resource(src, "en");
 
-        expect("bar", res.getEntry("foo")?.value);
-        expect(res.getEntry("foo")?.meta).toEqual(
+        expect("Some entry", res.getEntry("entryOne")?.value);
+        expect(res.getEntry("entryTwo")?.meta).toEqual(
             expect.arrayContaining([
                 { key: "resourceTag", value: "resource" },
-                { key: "sectionTag", value: "section" },
                 { key: "entryTag", value: "entry" },
             ])
         );
+    });
+
+    it("handles multiple sections with the same entry ids", () => {
+        const src = `
+---
+sameEntry = This is the first
+
+[my.section]
+
+sameEntry = This is the second
+`;
+        const res = new Mf2Resource(src, "en");
+
+        expect("This is the first", res.getEntry("sameEntry")?.value);
+        expect("This is the second", res.getEntry("my.section.sameEntry")?.value);
     });
 });

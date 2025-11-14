@@ -77,7 +77,7 @@ function parseSections(tokens: TokenSet): Section[] {
                 type: "entry",
                 comment: cm.comment,
                 meta: cm.meta,
-                id: key.split("."),
+                id: section.id.concat(key.split(".")),
                 value,
             });
         }
@@ -171,10 +171,7 @@ class TokenSet {
             this.next();
         }
 
-        return this.pop()
-            .join("")
-            .replaceAll("?SPACE?", " ")
-            .replaceAll("?NEWLINE?", "\n");
+        return this.pop().join("").replaceAll("?SPACE?", " ").replaceAll("?NEWLINE?", "\n");
     }
 
     cur(): string {
@@ -202,8 +199,7 @@ class TokenSet {
 
 function tokenizeInput(input: string): string[] {
     const text = input.replace(/\r\n/g, "\n");
-    const tokenRegex =
-        /---|[@#\[\]=\\]|[\p{L}\p{N}_\-.]+|[ \t]+|[^\s@#\[\]=\\]+|\n/gu;
+    const tokenRegex = /---|[@#\[\]=\\]|[\p{L}\p{N}_\-.]+|[ \t]+|[^\s@#\[\]=\\]+|\n/gu;
     const rawTokens = [...text.matchAll(tokenRegex)].map((m) => m[0]);
     const tokens: string[] = [];
 
@@ -228,4 +224,3 @@ function tokenizeInput(input: string): string[] {
 
     return tokens;
 }
-
