@@ -131,6 +131,7 @@ function parseComment(tokens: TokenSet): string {
 function parseMetadata(tokens: TokenSet): Metadata {
     tokens.consume(); // @
     const key = tokens.consume();
+    tokens.skipWhitespace();
     const value = tokens.consumeUntilNewline();
     return { key, value };
 }
@@ -170,7 +171,10 @@ class TokenSet {
             this.next();
         }
 
-        return this.pop().join("").replaceAll("?SPACE?", " ").replaceAll("?NEWLINE?", "\n");
+        return this.pop()
+            .join("")
+            .replaceAll("?SPACE?", " ")
+            .replaceAll("?NEWLINE?", "\n");
     }
 
     cur(): string {
@@ -198,7 +202,8 @@ class TokenSet {
 
 function tokenizeInput(input: string): string[] {
     const text = input.replace(/\r\n/g, "\n");
-    const tokenRegex = /---|[@#\[\]=\\]|[\p{L}\p{N}_\-.]+|[ \t]+|[^\s@#\[\]=\\]+|\n/gu;
+    const tokenRegex =
+        /---|[@#\[\]=\\]|[\p{L}\p{N}_\-.]+|[ \t]+|[^\s@#\[\]=\\]+|\n/gu;
     const rawTokens = [...text.matchAll(tokenRegex)].map((m) => m[0]);
     const tokens: string[] = [];
 
@@ -223,3 +228,4 @@ function tokenizeInput(input: string): string[] {
 
     return tokens;
 }
+
