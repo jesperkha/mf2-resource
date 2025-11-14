@@ -1,4 +1,4 @@
-import type { Entry, Metadata, Resource, Section } from "./resource.js";
+import type { Entry, Metadata, Resource, Section } from "./resource";
 
 export function parse(input: string): Resource {
     const tokens = new TokenSet(tokenizeInput(input));

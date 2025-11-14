@@ -1,0 +1,9 @@
+@locale en
+---
+
+greeting = Hello {$name}! How are you?
+
+multiline = This is the first line
+    second line
+    \    third line with leading spaces
+

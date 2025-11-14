@@ -5,8 +5,9 @@
     "main": "index.js",
     "type": "module",
     "scripts": {
-        "dev": "pnpm tsc && node ./dist/index.js",
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "dev": "vitest",
+        "test": "pnpm build && vitest run",
+        "build": "tsc -p tsconfig.build.json"
     },
     "keywords": [],
     "author": "",
@@ -14,9 +15,12 @@
     "packageManager": "pnpm@10.15.0",
     "devDependencies": {
         "@types/node": "^24.9.2",
+        "@typescript-eslint/eslint-plugin": "^8.46.4",
+        "@typescript-eslint/parser": "^8.46.4",
         "eslint": "^9.38.0",
         "prettier": "^3.6.2",
         "ts-node": "^10.9.2",
-        "typescript": "^5.9.3"
+        "typescript": "^5.9.3",
+        "vitest": "^4.0.9"
     }
 }

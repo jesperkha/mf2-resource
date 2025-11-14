@@ -1,6 +1,19 @@
 import { readFileSync } from "fs";
-import type { Metadata, Resource } from "./resource.js";
-import { parse } from "./parser.js";
+import type { Metadata, Resource } from "./resource";
+import { parse } from "./parser";
+
+/**
+ * Entry describes a resource entry.
+ */
+type Entry = {
+    /**
+     * All metadata tags applied to the resource, the
+     * section this entry is in, and the entry itself.
+     */
+    meta: Metadata[];
+    /** The string value of the entry. */
+    value: string;
+};
 
 /**
  * Resource contains one resource parsed from a file or string.
@@ -118,16 +131,3 @@ export class Bundle {
         return Object.keys(this.sources);
     }
 }
-
-/**
- * Entry describes a resource entry.
- */
-type Entry = {
-    /**
-     * All metadata tags applied to the resource, the
-     * section this entry is in, and the entry itself.
-     */
-    meta: Metadata[];
-    /** The string value of the entry. */
-    value: string;
-};
