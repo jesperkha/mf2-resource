@@ -1,7 +1,7 @@
 {
     "name": "mf2-resource",
-    "version": "1.0.0",
-    "description": "",
+    "version": "0.0.1",
+    "description": "Message format 2 resource parser and bundle.",
     "main": "index.js",
     "type": "module",
     "scripts": {

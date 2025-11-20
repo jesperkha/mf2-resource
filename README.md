@@ -1,9 +1,5 @@
 # MF2 Resource and Bundle
 
-```sh
-npm install mf2-resource
-```
-
 ## About
 
 This package provides utilities for loading, parsing, and bundling together multiple Message Format 2 resource files that use the [MF2 resource syntax](https://github.com/eemeli/message-resource-wg).
