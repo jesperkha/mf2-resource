@@ -1,0 +1,56 @@
+# Dependencies
+
+node_modules/
+
+# Logs
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment files
+
+.env
+.env.*
+
+# Tests
+
+test/
+tests/
+**tests**/
+coverage/
+
+# Build artifacts (ignore if you publish source)
+
+dist/
+build/
+.tmp/
+.cache/
+
+# Tooling & config
+
+.vscode/
+.idea/
+.editorconfig
+.prettierrc*
+.eslintrc*
+tsconfig*.json
+babel.config.*
+webpack.config.*
+rollup.config.*
+vite.config.*
+
+# Docs & misc
+
+docs/
+examples/
+*.md
+CHANGELOG*
+LICENSE*
+.gitignore
+
+# OS files
+
+.DS_Store
+Thumbs.db
