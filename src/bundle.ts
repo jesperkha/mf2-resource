@@ -1,6 +1,6 @@
 import { readFileSync } from "fs";
-import type { Metadata, Resource } from "./resource";
-import { parse } from "./parser";
+import type { Metadata, Resource } from "./resource.js";
+import { parse } from "./parser.js";
 
 /**
  * Entry describes a resource entry.
@@ -35,7 +35,11 @@ export class Mf2Resource {
      * @param encoding The file encoding, defaults to utf-8
      * @returns New Mf2Resource
      */
-    static fromFile(filepath: string, locale: string = "", encoding: BufferEncoding = "utf-8"): Mf2Resource {
+    static fromFile(
+        filepath: string,
+        locale: string = "",
+        encoding: BufferEncoding = "utf-8"
+    ): Mf2Resource {
         const data: string = readFileSync(filepath, encoding);
         return new Mf2Resource(data, locale);
     }
@@ -69,7 +73,9 @@ export class Mf2Resource {
                 if (entry.type == "entry" && entry.id.join(".") === name) {
                     return {
                         value: entry.value,
-                        meta: this.parts().meta.concat(section.meta).concat(entry.meta),
+                        meta: this.parts()
+                            .meta.concat(section.meta)
+                            .concat(entry.meta),
                     };
                 }
             }
@@ -131,3 +137,4 @@ export class Bundle {
         return Object.keys(this.sources);
     }
 }
+

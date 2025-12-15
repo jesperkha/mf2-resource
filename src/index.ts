@@ -1,2 +1,3 @@
-export { Bundle, Mf2Resource } from "./bundle";
-export type * from "./resource";
+export { Bundle, Mf2Resource } from "./bundle.js";
+export type * from "./resource.js";
+
